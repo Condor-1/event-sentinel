@@ -19,7 +19,7 @@ A modular Windows event log SIEM built for learning and experimenting with rule-
 
 ## Detection Rules
 
-###Current detections include:
+### Current detections include:
 
 | Event ID | Detection |
 |---|---|
