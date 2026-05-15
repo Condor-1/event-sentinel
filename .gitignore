@@ -1,0 +1,27 @@
+# Virtual Environment
+.venv/
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Runtime State
+data/event_state.json
+
+# Local Files
+structure.txt
+
+# OS / Editor
+.vscode/
+.idea/
+.DS_Store
+
+# Database Files
+*.db
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+delta-summary-prompt.txt

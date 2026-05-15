@@ -1,0 +1,2 @@
+# Python dependencies placeholder.
+# Suggested entries: pywin32

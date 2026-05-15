@@ -1,0 +1,2 @@
+-- Placeholder for the SQLite schema used by the mini SIEM.
+-- Suggested tables: events, alerts, checkpoints

@@ -1,0 +1,208 @@
+MASTER PROJECT BLUEPRINT — MINI SIEM
+🎯 1. The Mission
+
+We are building a lightweight, modular SIEM (Security Information and Event Management) system focused on:
+
+	Real-time Windows Event Log ingestion → rule-based detection → structured alerting
+
+Core Objective:
+
+	Detect high-signal attacker behaviors using:
+		-Windows Security Logs (primary)
+		-Windows System Logs (secondary)
+	
+	Design Philosophy:
+		-Minimal but meaningful detection
+		-High signal, low noise
+		-Rule-based (not ML) for clarity + control
+		-Modular architecture for future expansion
+
+
+🧠 2. The Decision Log (Architectural Choices)
+🔹 Log Source
+Windows Event Logs (Security + System)
+Reason: Native, reliable, attacker-relevant
+
+🔹 Event Processing Model
+	-Polling-based ingestion loop
+	-Reads new events incrementally
+	-Tracks record_number to avoid duplication
+
+🔹 Rule-Based Detection Engine
+	-Each detection = independent module
+	-No early correlation (kept simple intentionally)
+
+🔹 Modular Rule Files
+	-auth_rules.py        → login behavior (4624, 4625)
+	-privilege_rules.py   → privilege escalation (4672)
+	-process_creation.py  → execution detection (4688)
+	-shutdown_rules.py    → system events
+	-account_rules.py     → (next phase)
+
+👉 Reason:
+	-Isolation prevents breaking working logic
+	-Easy debugging + extensibility
+
+🔹 Detection Strategy
+	Instead of: Complex correlation ❌
+
+	We chose: High-confidence single-event detection ✔️
+
+🔹 Process Detection Logic (Key Insight)
+	-4688 logs contain MULTIPLE processes
+
+👉 Decision:
+
+Extract ALL .exe → normalize → match ANY ✔️
+
+🔹 Parsing Strategy Evolution
+	-Stage	Approach	Result
+	-Initial	Token-based	❌ unreliable
+	-Intermediate	Index-based	❌ brittle
+	-Final	Raw string parsing	✔️ stable
+
+🔹 CommandLine Handling
+
+	Final approach:
+	-Use raw message string
+	-Extract from LAST ".exe" → until SID boundary
+
+🔹 Severity Handling
+
+Currently: Hardcoded per rule ✔️
+
+Future:
+Centralized severity engine 🔜
+
+🔹 Debug System
+	-Global DEBUG toggle in config.py ✔️
+
+Used for:
+	-tracing parsing
+	-validating detection
+	-avoiding permanent noisy logs
+
+🚀 3. Feature Roadmap
+✅ COMPLETED (Working System)
+ 	-Event ingestion loop
+ 	-Record tracking (no duplicates)
+ 	-auth_rules (4624, 4625)
+ 	-privilege_rules (4672)
+ 	-process_creation (4688)
+ 	-shutdown_rules
+ 	-Rule engine integration
+ 	-Multi-process parsing
+	-Alert formatting
+	-Debug toggle system
+
+
+🟡 CURRENT (In Progress / Just Finished)
+-CommandLine extraction (final polish stage)
+
+🔜 NEXT (High Priority)
+🔥 account_rules.py
+
+Events:
+
+4720 → user created
+4732 → added to group (especially admin)
+
+Detection ideas:
+
+new user creation → alert
+-user added to Administrators → HIGH alert
+
+🔮 FUTURE FEATURES (Planned)
+	-Detection Enhancements
+	-parent-child process chaining
+	-suspicious command flags
+	-time-based correlation
+	-SIEM Features
+	-centralized severity engine
+	-alert deduplication
+	-persistence (log storage)
+	-dashboard / UI
+
+🧠 4. Cursor Prompting Guide (VERY IMPORTANT)
+
+This is what made everything work smoothly:
+
+✅ Prompt Style That Works
+- EXTREME CAUTION
+- DO NOT MODIFY existing logic
+- ONLY FIX <specific component>
+- CLEAR constraints
+- CLEAR goal
+🔑 Key Rules When Prompting Cursor
+
+1. Always isolate scope
+"ONLY fix parsing"
+"DO NOT change detection logic"
+
+2. Be explicit about constraints
+DO NOT:
+- refactor
+- optimize
+- change flow
+3. Define exact expected output
+Goal: "C:\Windows\...\powershell.exe" -NoProfile
+
+4. Avoid vague instructions
+❌ Bad: Fix parsing
+
+✔️ Good: Use LAST ".exe" occurrence and extract until " S-1-"
+
+5. Add debug instructions
+print("DEBUG ...")
+👉 This saved HOURS of guessing
+
+🧠 Core Principle
+Cursor is powerful but aggressive
+→ You must constrain it
+📍 5. Current State of Brainstorming
+
+✅ Where we are
+	-Full detection pipeline working
+	-process_creation fully functional
+	-CommandLine extraction ~95% complete
+	-System stable (rules frozen except improvements)
+
+🎯 Immediate Next Step
+	-Start account_rules.py
+
+🧠 What needs to be designed BEFORE Cursor
+
+We define:
+
+1. Detection rules
+IF event_id == 4720 → alert (new user)
+IF event_id == 4732 AND group == "Administrators" → HIGH alert
+
+2. Severity logic
+4720 → MEDIUM
+4732 (admin group) → HIGH
+
+3. Output format
+[ALERT][HIGH] User added to privileged group
+User: X
+Group: Administrators
+Timestamp: Y
+
+4. Keep same constraints:
+- No correlation
+- No time windows
+- Independent rule
+
+
+🏁 FINAL STATE SUMMARY
+
+You now have:
+
+✔ Working mini SIEM engine
+✔ Modular detection system
+✔ Real Windows log parsing
+✔ Reliable process detection
+✔ Clean architecture for scaling
+😈 What this actually means
+
+You didn’t just build a project—you built: A foundation that can evolve into a real SIEM
