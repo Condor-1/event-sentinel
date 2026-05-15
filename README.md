@@ -38,17 +38,15 @@ A modular Windows event log SIEM built for learning and experimenting with rule-
 
 ## Architecture
 
-The project is split into separate modules to keep the detection logic isolated and easier to debug
+The project is split into separate modules to keep the detection logic isolated and makes debugging easier
 
+'''text
 mini_siem/
-
 ├── collector/
-
 ├── parser/
-
 ├── rules/
-
 ├── database/
+'''
 
 ### Collector:
 
@@ -70,25 +68,18 @@ Handles SQLite storage and schema management
 
 ## Project Structure
 
+'''text
 event-sentinel/
-
 ├── main.py
-
 ├── config.py
-
 ├── requirements.txt
-
 ├── mini_siem/
-
 │   ├── collector/
-
 │   ├── parser/
-
 │   ├── rules/
-
 │   └── database/
-
 └── data/
+'''
 
 ---
 
