@@ -1,20 +1,9 @@
-"""
-State tracker for Windows Event Log processing.
-
-This module keeps track of the "last processed record number" so the collector
-can resume where it left off between runs.
-
-It stores a small JSON file in the project-level `data/` folder.
-"""
-
 from __future__ import annotations
 
 import json
 from pathlib import Path
 from typing import Any, Dict
 
-# Compute the project root so `data/` works regardless of the current working dir.
-# `state_tracker.py` lives at: <root>/mini_siem/collector/state_tracker.py
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
 STATE_FILE_PATH = DATA_DIR / "event_state.json"
@@ -27,14 +16,11 @@ def save_last_processed_record_number(last_record_number: int) -> None:
     Args:
         last_record_number: The event log record number to persist.
     """
-
-    # Make sure the `data/` folder exists.
     try:
         DATA_DIR.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
         raise RuntimeError(f"Unable to create data directory: {DATA_DIR}") from exc
 
-    # Store everything in a single JSON file with a stable key name.
     payload: Dict[str, Any] = {"last_record_number": int(last_record_number)}
 
     try:
@@ -44,15 +30,7 @@ def save_last_processed_record_number(last_record_number: int) -> None:
 
 
 def load_last_processed_record_number() -> int:
-    """
-    Load the last processed Windows Event Log record number from disk.
-
-    Returns:
-        The stored record number as an int.
-        Defaults to `0` if the state file (or key) does not exist or is invalid.
-    """
-
-    # Default value: if the file doesn't exist yet, start from 0.
+    
     if not STATE_FILE_PATH.exists():
         return 0
 
@@ -60,10 +38,10 @@ def load_last_processed_record_number() -> int:
         raw = STATE_FILE_PATH.read_text(encoding="utf-8")
         data = json.loads(raw)
     except (OSError, json.JSONDecodeError):
-        # If the file can't be read or parsed, fall back to default.
+        
         return 0
 
-    # Validate expected structure.
+    
     if not isinstance(data, dict):
         return 0
 
