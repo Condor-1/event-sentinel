@@ -14,13 +14,8 @@ def _normalize_user(value: Any) -> str:
 
 
 def _extract_4625_fields_from_inserts(inserts: Any) -> Tuple[str, str | None, str | None]:
-    """
-    Extract fields from Security 4625 StringInserts by index.
-
-    Common insert ordering for 4625 varies by Windows version/auditing settings.
-    We therefore try multiple likely positions for the username and pick the first
-    valid value.
-    """
+   
+    # Extract fields from Security 4625 StringInserts by index.
 
     if not isinstance(inserts, list):
         return "Unknown", None, None
@@ -30,7 +25,6 @@ def _extract_4625_fields_from_inserts(inserts: Any) -> Tuple[str, str | None, st
 
     username = "Unknown"
     # Try multiple candidates for TargetUserName / Account Name (0-based indices).
-    # Index 5 is common, but some environments shift the ordering.
     for idx in (5, 1, 0, 6, 2, 3, 4, 7, 8, 9, 11, 12, 13):
         candidate = _at(idx)
         normalized = _normalize_user(candidate)
@@ -67,7 +61,6 @@ def _extract_4624_username(inserts: Any) -> str:
 
 
 def _extract_4672_username(inserts: Any) -> str:
-    # Common 4672 mapping: SubjectUserName is often index 1.
     return _extract_username_from_inserts(inserts, (1, 0, 2, 3, 4, 5))
 
 
@@ -79,7 +72,6 @@ _FALLBACK_SESSION_MATCH_WINDOW = timedelta(seconds=5)
 _DEBUG = True
 _EVENT_PRIORITY = {4625: 0, 4624: 1, 4672: 2}
 
-# Hybrid SIEM-style state (persistent across polling iterations).
 _recent_failures: List[Dict[str, Any]] = []
 _sessions: Dict[str, Dict[str, Any]] = {}
 _last_alert_by_logon_id: Dict[str, datetime] = {}
@@ -258,7 +250,6 @@ def detect_failed_login(events: Iterable[Dict[str, Any]]) -> None:
             }
         )
 
-    # Ensure deterministic chronological processing inside each batch.
     # For identical timestamps, keep auth flow order: 4625 -> 4624 -> 4672.
     normalized_events.sort(
         key=lambda item: (item["ts"], _EVENT_PRIORITY.get(item["event_id"], 99))
